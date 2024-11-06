@@ -25,10 +25,12 @@ url = "https://www.immonet.de/classified-search?distributionTypes=Buy,Buy_Auctio
 driver.get(url)
 
 # Optional: Wait for a few seconds to allow the page to load
-time.sleep(random.uniform(2, 5))  # Random sleep
+time.sleep(1)  # Increase sleep time if necessary
+
+print(driver.page_source)  # Check if the expected elements are present
 
 # Wait until the buttons load
-wait = WebDriverWait(driver, 20)  # Increase wait time
+wait = WebDriverWait(driver, 4)  # Increase wait time
 try:
     buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
     print(f"Found {len(buttons)} buttons.")
@@ -43,5 +45,5 @@ try:
 except Exception as e:
     print(f"An error occurred: {str(e)}")
 
-finally:
-    driver.quit()
+# Close the WebDriver
+driver.quit()
