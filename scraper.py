@@ -17,19 +17,20 @@ chrome_options.add_argument("--disable-gpu")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-#COMMENT
-
 # Open the target URL
 url = "https://www.immonet.de/classified-search?distributionTypes=Buy,Buy_Auction,Compulsory_Auction&estateTypes=House,Apartment&locations=AD08DE8634&order=Default&m=homepage_new_search_classified_search_result"
 driver.get(url)
 
-# Optional: Wait for a few seconds to allow the page to load
-time.sleep(1)  # Increase sleep time if necessary
+# Pause execution to allow you to manually solve the CAPTCHA
+input("Please complete the CAPTCHA and press Enter to continue...")
+
+# Optional: Wait for a few seconds to allow the page to load fully
+time.sleep(1)
 
 print(driver.page_source)  # Check if the expected elements are present
 
 # Wait until the buttons load
-wait = WebDriverWait(driver, 4)  # Increase wait time
+wait = WebDriverWait(driver, 10)  # Increase wait time
 try:
     # Wait for the button elements to be present
     buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
@@ -43,5 +44,7 @@ try:
 except Exception as e:
     print(f"An error occurred: {e}")
 
-# Close the WebDriver
-driver.quit()
+# Don't close the browser automatically to keep it open for debugging
+# Close the WebDriver manually after confirming data collection
+# driver.quit()
+
