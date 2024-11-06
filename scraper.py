@@ -12,7 +12,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 chrome_options = Options()
 # chrome_options.add_argument("--headless")  # Comment this line out to see the browser
 
-chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
 chrome_options.add_argument("--disable-gpu") 
 
@@ -30,7 +29,7 @@ time.sleep(1)  # Increase sleep time if necessary
 print(driver.page_source)  # Check if the expected elements are present
 
 # Wait until the buttons load
-wait = WebDriverWait(driver, 4)  # Increase wait time
+wait = WebDriverWait(driver, 10)  # Increase wait time
 try:
     buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
     print(f"Found {len(buttons)} buttons.")
@@ -46,4 +45,4 @@ except Exception as e:
     print(f"An error occurred: {str(e)}")
 
 # Close the WebDriver
-driver.quit()
+# driver.quit()
