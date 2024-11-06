@@ -19,30 +19,34 @@ chrome_options.add_argument("--disable-gpu")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# Open the target URL
-url = "https://www.immonet.de/classified-search?distributionTypes=Buy,Buy_Auction,Compulsory_Auction&estateTypes=House,Apartment&locations=AD08DE8634&order=Default&m=homepage_new_search_classified_search_result"
-driver.get(url)
+# Define the base URL without the page number
+base_url = "https://www.immonet.de/classified-search?distributionTypes=Buy,Buy_Auction,Compulsory_Auction&estateTypes=Apartment&locations=AD08DE8634&page="
 
-# Optional: Wait for a few seconds to allow the page to load
-time.sleep(1)  # Increase sleep time if necessary
+# Loop through the desired number of pages (e.g., 1 to 5)
+for page in range(1, 6):  # Change 6 to the desired number of pages
+    url = f"{base_url}{page}"  # Increment the page number in the URL
+    driver.get(url)
 
-print(driver.page_source)  # Check if the expected elements are present
+    # Optional: Wait for a few seconds to allow the page to load
+    time.sleep(1)  # Increase sleep time if necessary
 
-# Wait until the buttons load
-wait = WebDriverWait(driver, 10)  # Increase wait time
-try:
-    buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
-    print(f"Found {len(buttons)} buttons.")
+    print(driver.page_source)  # Check if the expected elements are present
 
-    for button in buttons:
-        title = button.get_attribute("title")
-        print(title)
-        
-        # Introduce a random delay between processing each button
-        time.sleep(random.uniform(1, 3))  # Sleep for a random time between 1 and 3 seconds
+    # Wait until the buttons load
+    wait = WebDriverWait(driver, 10)  # Increase wait time
+    try:
+        buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
+        print(f"Found {len(buttons)} buttons.")
 
-except Exception as e:
-    print(f"An error occurred: {str(e)}")
+        for button in buttons:
+            title = button.get_attribute("title")
+            print(title)
+            
+            # Introduce a random delay between processing each button
+            time.sleep(random.uniform(1, 3))  # Sleep for a random time between 1 and 3 seconds
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 # Close the WebDriver
 # driver.quit()
