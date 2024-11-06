@@ -11,13 +11,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 # Set up Chrome options
 chrome_options = Options()
 # chrome_options.add_argument("--headless")  # Comment this line out to see the browser
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-gpu")
 
-# Specify the path to your Chrome user data directory
-user_data_dir = "/Users/user/Library/Application Support/Google/Chrome"  # Update this path
-chrome_options.add_argument(f"user-data-dir={user_data_dir}")
-chrome_options.add_argument("profile-directory=Default")  
+chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+chrome_options.add_argument("--disable-gpu") 
 
 # Use WebDriver Manager to automatically manage the ChromeDriver
 service = Service(ChromeDriverManager().install())
@@ -45,7 +42,6 @@ try:
 
 except Exception as e:
     print(f"An error occurred: {str(e)}")
-    input("Please solve the CAPTCHA and press Enter to continue...")  # Wait for user to solve CAPTCHA
 
 finally:
     driver.quit()
