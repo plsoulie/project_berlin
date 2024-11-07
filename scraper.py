@@ -20,7 +20,7 @@ output_file_path = "data-appartement.txt"
 with open(output_file_path, "a", encoding="utf-8") as output_file:
 
     # Loop through the desired number of pages (e.g., 1 to 5)
-    for page in range(1, 2):  # Change 200 to the desired number of pages
+    for page in range(20, 200):  # Change 200 to the desired number of pages
         # Choose a random proxy from the list for each page
         proxy = random.choice(proxies)
         print(f"Using proxy: {proxy}")  # Debugging: Log the entire proxy string
@@ -50,7 +50,7 @@ with open(output_file_path, "a", encoding="utf-8") as output_file:
         driver.get(url)
 
         # Wait for a random delay to avoid detection
-        time.sleep(random.uniform(2, 5))  # Random delay between 5 and 10 seconds
+        time.sleep(random.uniform(5, 10))  # Random delay between 5 and 10 seconds
 
         # Write the page header to the file
         output_file.write(f"\n--- Page {page} ---\n")
