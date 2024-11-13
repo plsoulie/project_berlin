@@ -56,7 +56,7 @@ with open(output_file_path, "a", encoding="utf-8") as output_file:
         output_file.write(f"\n--- Page {page} ---\n")
 
         # Wait until the buttons load
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 10)
         try:
             # Wait for the buttons to load
             buttons = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-oobyeg")))
