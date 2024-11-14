@@ -50,9 +50,13 @@ for entry in raw_data:
     rooms_match = rooms_pattern.search(entry)
     rooms.append(rooms_match.group(1) if rooms_match else "Unknown")
 
-    # Extract surface area
+    # Extract surface area and convert format
     surface_match = surface_pattern.search(entry)
-    surface.append(surface_match.group(1) if surface_match else "Unknown")  # Capture the area value
+    if surface_match:
+        surface_value = surface_match.group(1).replace(',', '.')  # Replace comma with dot
+        surface.append(surface_value)  # Capture the area value
+    else:
+        surface.append("Unknown")  # Handle case if not found
 
     # Extract floor
     floor_match = floor_pattern.search(entry)

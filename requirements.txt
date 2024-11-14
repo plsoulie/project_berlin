@@ -6,3 +6,5 @@ openpyxl
 selenium
 selenium-wire
 webdriver-manager
+seaborn
+matplotlib
