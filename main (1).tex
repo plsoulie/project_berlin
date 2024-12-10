@@ -1,0 +1,358 @@
+\documentclass[twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{booktabs}
+
+% Set margins for two-column layout
+\geometry{
+    a4paper,
+    left=2cm,
+    right=2cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+\title{Predictive Modeling for Berlin Real Estate Market Analysis}
+\author{Pierre-Louis Soulie, Edmond Loubeyre, Sebastien Guerif, 
+\\ Augustin Trébaol, Willem Larras}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This project aims to build a predictive model for analyzing real estate trends and estimating property prices within the Berlin agglomeration. By leveraging publicly available property data through web scraping, the project involves systematically collecting, cleaning, and standardizing real estate listings to create a high-quality dataset. Key stages include data preprocessing to handle duplicates, missing values, and outliers, as well as converting categorical information into structured formats suitable for analysis.
+
+After performing exploratory data analysis (EDA) to uncover trends and correlations, we apply machine learning algorithms to develop a predictive model capable of estimating property prices based on location, size, type, and other relevant features. Spatial analysis and geolocation data enrich our understanding of geographical patterns across neighborhoods.
+\end{abstract}
+
+\section{Project setup and goals}
+\subsection{Objective}
+Develop an analytical model to predict real estate trends and prices in Berlin's agglomeration areas.
+
+\subsection{Scope}
+Focus on residential properties, including apartments and houses, with data spanning key factors like location, size, price, and neighborhood amenities.
+
+% Continue with other sections...
+\section{Data collection}
+The data used in this project was collected through web scraping from \textit{immonet.de}, one of Germany's leading real estate platforms. The platform provides detailed listings for properties across various neighborhoods in Berlin, including information such as property price, size, number of rooms, and location.
+
+To extract the data, we implemented an automated web scraping pipeline using Python and Selenium. The scraping process involved:
+\begin{itemize}
+    \item Navigating through multiple pages of property listings.
+    \item Extracting key details for each property, including price, area, number of rooms, and location.
+    \item Using a proxy rotation strategy to avoid detection and bypass CAPTCHA challenges encountered on the website.
+    \item Implementing delays and randomized actions to mimic human behavior and ensure compliance with ethical scraping practices.
+\end{itemize}
+
+The scraping process faced challenges due to the website's anti-bot measures and the time-intensive nature of handling CAPTCHA and proxies. As a result, we limited the scope of our scraping to ensure timely completion of the project. After cleaning and processing the collected data, we obtained a total of 498 usable property listings, which provided a sufficient foundation for analysis.
+
+The dataset contains several important attributes that describe the characteristics of each property. These attributes include:
+\begin{itemize}
+    \item \textbf{Price (€)}: The listed price of the property in euros.
+    \item \textbf{Area (m²)}: The total living area of the property in square meters.
+    \item \textbf{Number of rooms}: The number of rooms in the property, including bedrooms, living rooms, and other functional spaces.
+    \item \textbf{Neighborhood}: The neighborhood or district of Berlin where the property is located.
+    \item \textbf{Property type}: The type of property, such as apartment, single-family house, or penthouse.
+    \item \textbf{Availability}: The availability status of the property (e.g., "immediately available").
+\end{itemize}
+Each of these attributes provides critical information for analyzing trends in Berlin's real estate market.
+\subsection{Summary statistics}
+
+Table \ref{tab:summary_statistics} provides a summary of the numerical attributes in the dataset, including their mean, median, and standard deviation.
+
+\begin{table}[h!]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Attribute} & \textbf{Mean} & \textbf{Median} & \textbf{Standard Deviation} \\
+\hline
+Price (€)          & 520,000       & 480,000         & 150,000                     \\
+Area (m²)          & 90            & 85              & 25                          \\
+Number of Rooms    & 3.5           & 3               & 1.2                         \\
+\hline
+\end{tabular}%
+}
+\caption{Summary statistics for key numerical attributes.}
+\label{tab:summary_statistics}
+\end{table}
+
+The dataset also includes categorical attributes, such as \textit{Neighborhood} and \textit{Property type}, which provide further insight into the characteristics of the properties
+
+\section{Data cleaning and standardization}
+During the cleaning and preprocessing phase, we removed the \textit{property type}, \textit{location}, \textit{floor}, \textit{Zip Code}, and \textit{address} columns from the set of input variables due to their limited influence on the model's predictive power. This decision was made for the following reasons:
+\begin{itemize}
+    \item The data contained five property types: apartment, studio, penthouse, house, and auctioned properties. However, apartments accounted for 94\% of the listings, making the \textit{property type} variable nearly redundant for analysis.
+    \item The \textit{location} data was almost entirely composed of "Berlin," with only a few records including specific neighborhood information. Furthermore, the \textit{neighborhood} column already provided this information, making the \textit{location} column unnecessary.
+    \item The \textit{floor} variable was excluded as it would have biased the regression model. This is because we had 197 records where the floor was undefined and 43 records with missing floor data, which could have distorted the results.
+    \item The \textit{Zip Code} column was removed because including it led to poor model performance. The model did not show significant improvement in predictive power, indicating that this feature was not useful.
+    \item The \textit{address} data was also excluded because it could not be effectively encoded as a binary (or one-hot) feature. The dataset contained street names and their corresponding numbers, but encoding addresses in a meaningful way would have required geographic position data, which we did not have enough of to properly model.
+    \item Rows with unknown values for the \textit{rooms} feature were removed, as these values were essential for our analysis and could not be imputed meaningfully.
+    \item Rows with prices listed as "auf Anfrage" (upon request) were also excluded, as these entries did not provide numerical price data, which was necessary for the regression analysis.
+\end{itemize}
+
+To ensure the consistency of the dataset, we also resolved formatting issues in the \textit{price} and \textit{rooms} columns. For the \textit{price}, currency symbols and separators were removed, converting the data into a clean numerical format. Similarly, for the \textit{rooms}, non-numerical entries (e.g., textual descriptions) were handled to ensure the data was entirely numerical.
+
+In addition to these cleaning steps, the \textit{neighborhood} feature was processed using the one-hot encoding method. This technique created a separate column for each neighborhood present in the dataset. Each column contained binary values: a value of 1 indicated that a property belonged to the corresponding neighborhood, while a value of 0 indicated that it did not. This transformation allowed us to incorporate categorical information about neighborhoods into the regression model in a numerical and interpretable format.
+
+The cleaned dataset was thus reduced to focus on numerical variables directly related to property characteristics, ensuring the regression model's reliability and interpretability.
+
+
+\section{Exploratory Data Analysis (EDA)}
+% Content for EDA
+
+\section{Prediction Model Development}
+% Content for Model Development
+
+\subsection{Feature Engineering}
+Before implementing our models, we performed feature engineering to enhance model performance:
+\begin{itemize}
+    \item Extracted features: average neighborhood price, proximity to amenities, property age
+    \item Created interaction terms between price per m² and neighborhood
+    \item Normalized numerical features using standard scaling
+    \item Encoded categorical variables using one-hot encoding
+\end{itemize}
+
+\subsection{Model Architecture}
+We implemented three distinct modeling approaches to compare their effectiveness in predicting real estate prices:
+
+\subsubsection{Neural Network Model}
+\begin{itemize}
+    \item Architecture: Multi-layer Perceptron (MLP) with the following layers:
+    \begin{itemize}
+        \item Input layer: 8 features (surface area, rooms, floor, neighborhood, and engineered interaction features)
+        \item First hidden layer: 128 neurons with ReLU activation, followed by batch normalization and 30\% dropout
+        \item Second hidden layer: 64 neurons with ReLU activation, followed by batch normalization and 30\% dropout
+        \item Third hidden layer: 32 neurons with ReLU activation, followed by batch normalization
+        \item Output layer: 1 neuron (linear activation) for price prediction
+    \end{itemize}
+    \item Optimization:
+    \begin{itemize}
+        \item Adam optimizer with exponential learning rate decay
+        \item Initial learning rate: 0.001
+        \item Decay steps: 1000
+        \item Decay rate: 0.9
+    \end{itemize}
+    \item Training parameters:
+    \begin{itemize}
+        \item Loss function: Huber loss (robust to outliers)
+        \item Batch size: 32
+        \item Early stopping with patience of 10 epochs
+        \item Validation split: 20\% of training data
+    \end{itemize}
+    \item Feature engineering:
+    \begin{itemize}
+        \item Surface-Neighborhood interaction term
+        \item Neighborhood size categories (small, medium, large) based on surface area quantiles
+        \item Log transformation of price values to handle scale
+        \item Standardization of numerical features
+    \end{itemize}
+    \item Regularization techniques:
+    \begin{itemize}
+        \item Dropout layers (30\% rate) to prevent overfitting
+        \item Batch normalization for better training stability
+        \item Early stopping based on validation loss
+        \item Outlier removal using 3-standard-deviation threshold
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Linear Regression Model}
+\begin{itemize}
+    \item A multiple linear regression model was developed using the cleaned dataset, where the inputs were the \textit{surface}, the \textit{number of rooms}, and the binary variables representing the property’s inclusion in each \textit{neighborhood}. The methodology followed these steps:
+\begin{itemize}
+    \item Input (\(X\)) and output (\(Y\)) matrices were constructed:
+    \begin{itemize}
+        \item \(X\) included the \textit{surface} (in square meters), the \textit{number of rooms}, and the one-hot encoded \textit{neighborhoods}.
+        \item \(Y\) represented property prices (in euros).
+    \end{itemize}
+    \item The data was centered by subtracting the mean from each feature:
+    \[
+    \mathbf{X}^c = \mathbf{X} - \hat{\mu}_X, \quad \mathbf{Y}^c = \mathbf{Y} - \hat{\mu}_Y
+    \]
+    \item Regression coefficients were calculated using the formula:
+    \[
+    \hat{\theta}_1 = \left( (\mathbf{X}^c)^T \mathbf{X}^c \right)^{-1} (\mathbf{X}^c)^T \mathbf{Y}^c
+    \]
+    The intercept was computed as:
+    \[
+    \hat{\theta}_0 = \hat{\mu}_Y - \hat{\mu}_X \hat{\theta}_1
+    \]
+    \item Predictions were generated using:
+    \[
+    \hat{\mathbf{Y}} = \hat{\theta}_0 + \mathbf{X} \hat{\theta}_1
+    \]
+\end{itemize}
+    \item Variants tested:
+    \begin{itemize}
+        \item Ridge Regression (L2 regularization)
+        \item Lasso Regression (L1 regularization)
+        \item Elastic Net (Combined L1 and L2)
+    \end{itemize}
+    \item Polynomial features included for non-linear relationships
+\end{itemize}
+
+\subsubsection{Tree-based models}
+\begin{itemize}
+    \item Decision Tree as baseline
+    \item Random Forest Ensemble
+    \item Gradient Boosting (XGBoost)
+    \item LightGBM implementation
+\end{itemize}
+
+\subsection{Model evaluation}
+We evaluated each model using the following metrics:
+\begin{table}[H]
+    \centering
+    \caption{Model Performance Comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        Model & RMSE & MAE & R² Score \\
+        \midrule
+        Neural Network & 0.29M & 0.34M & 0.626 \\
+        Linear Regression & [value] & [value] & [value] \\
+        Tree-Based & [value] & [value] & [value] \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:model_comparison}
+\end{table}
+
+\subsection{Hyperparameter Tuning}
+For each model category, we performed extensive hyperparameter optimization:
+
+\subsubsection{Neural Network Tuning}
+\begin{itemize}
+    \item Network architecture optimization:
+    \begin{itemize}
+        \item Input layer: Dimensioned to match 8 engineered features
+        \item Three hidden layers: 128, 64, and 32 neurons respectively
+        \item ReLU activation functions for all hidden layers
+        \item Batch normalization after each hidden layer
+    \end{itemize}
+    \item Learning rate optimization:
+    \begin{itemize}
+        \item Initial learning rate: 0.001
+        \item Exponential decay schedule
+        \item Decay steps: 1000
+        \item Decay rate: 0.9
+    \end{itemize}
+    \item Regularization parameters:
+    \begin{itemize}
+        \item Dropout rates: 30\% after first and second hidden layers
+        \item Early stopping with patience of 10 epochs
+        \item Validation split: 20\% of training data
+    \end{itemize}
+    \item Training parameters:
+    \begin{itemize}
+        \item Batch size: 32
+        \item Maximum epochs: 100
+        \item Huber loss function for robustness against outliers
+        \item Adam optimizer with learning rate scheduling
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Linear Regression Tuning}
+\begin{itemize}
+    \item Regularization strength (alpha)
+    \item L1 ratio for Elastic Net
+    \item Polynomial degree
+\end{itemize}
+
+\subsubsection{Tree-Based Model Tuning}
+\begin{itemize}
+    \item Maximum depth
+    \item Number of estimators
+    \item Learning rate
+    \item Minimum samples per leaf
+\end{itemize}
+
+\subsection{Cross-Validation}
+To ensure robust evaluation:
+\begin{itemize}
+    \item K-fold cross-validation (k=5)
+    \item Time-based splitting for temporal validation
+    \item Stratified sampling based on price ranges
+\end{itemize}
+
+\subsection{Model Interpretability}
+For each model type, we analyzed feature importance:
+\begin{itemize}
+    \item Neural Network: SHAP values
+    \item Linear Regression: Coefficient analysis
+    \item Tree-Based: Feature importance scores and partial dependence plots
+\end{itemize}
+
+\section{Results and Visualization}
+\subsection*{6.1 Average Property Prices by District in Berlin}
+
+The visualization shown in Figure \ref{fig:berlin_prices} provides a choropleth map of Berlin, where each district is color-coded based on the average property price. The color gradient ranges from light shades (indicating lower average prices) to dark shades (indicating higher average prices). This map allows us to identify clear spatial trends in property pricing across the city.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{Visualisation/avg-by-district.png} 
+    \caption{Average Property Prices by District in Berlin.}
+    \label{fig:berlin_prices}
+\end{figure}
+
+From the map, we observed the following:
+\begin{itemize}
+    \item Central districts, such as Mitte and Friedrichshain-Kreuzberg, generally exhibit higher property prices, likely due to their proximity to key business and cultural hubs.
+    \item Outer districts, including Spandau and Marzahn-Hellersdorf, show significantly lower average prices, aligning with their residential and suburban characteristics.
+    \item The visualization highlights significant disparities in property pricing, emphasizing the influence of location on real estate values in Berlin.
+\end{itemize}
+
+This choropleth map provides an intuitive way to understand how property prices vary spatially across Berlin and serves as a foundational visualization for further analysis.
+
+\subsection*{6.2 Distribution of Property Prices}
+The visualization shown in Figure \ref{fig:price_distribution} depicts the distribution of property prices in Berlin using a histogram. This visualization provides insights into the overall range and frequency of property prices within the dataset.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{Visualisation/price-distribution.png} 
+    \caption{Distribution of Property Prices in Berlin.}
+    \label{fig:price_distribution}
+\end{figure}
+
+From this histogram, we observed the following:
+\begin{itemize}
+    \item The majority of properties are concentrated in the lower price range, indicating a higher availability of affordable housing options.
+    \item There are a few outliers in the dataset representing luxury properties with significantly higher prices.
+    \item The distribution is heavily skewed to the right, suggesting a disparity between the average and maximum property prices in Berlin.
+\end{itemize}
+
+This analysis highlights the affordability and exclusivity trends in Berlin's real estate market. The histogram helps identify market segments and provides valuable insights for stakeholders aiming to target specific property categories.
+\subsection*{6.3 Distribution of Prices by Number of Rooms}
+The visualization shown in Figure \ref{fig:price_by_rooms} uses a box plot to represent the distribution of property prices across different numbers of rooms. This visualization allows us to analyze how room count impacts property prices and the variability within each category.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{Visualisation/price-number-of-rooms.png} 
+    \caption{Distribution of Property Prices by Number of Rooms.}
+    \label{fig:price_by_rooms}
+\end{figure}
+
+Key observations from the box plot include:
+\begin{itemize}
+    \item As the number of rooms increases, the median property price generally rises, reflecting the higher value of larger properties.
+    \item Properties with fewer rooms (1-3) exhibit relatively lower prices and smaller interquartile ranges, indicating less price variability within these categories.
+    \item Larger properties (4-7 rooms) show greater variability in prices, possibly due to differences in amenities, location, and property type.
+    \item Outliers are more prevalent in categories with a higher number of rooms, highlighting the presence of luxury properties that significantly exceed the average price for their category.
+\end{itemize}
+
+This visualization underscores the relationship between property size and price, providing insights into buyer preferences and market segmentation based on room count. It also serves as a useful tool for understanding how property value scales with size.
+
+
+\section{Documentation and Future Work}
+% Content for Documentation and Future Work
+
+% References section
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
